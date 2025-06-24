@@ -6,18 +6,20 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  Dimensions,
   ImageBackground,
   TextInput,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from '@/contexts/AppContext';
+import { useResponsive, getCardWidth, getColumnsForScreen, getResponsivePadding } from '@/hooks/useResponsive';
 
-const { width } = Dimensions.get('window');
-
-// Componente de card de conteúdo para biblioteca
-const LibraryCard = ({ item, type = 'course' }: { item: any; type?: 'course' | 'app' | 'journey' }) => {
-  const cardWidth = (width - 60) / 2; // 2 colunas com espaçamento
+// Componente de card responsivo para biblioteca
+const ResponsiveLibraryCard = ({ item, type = 'course' }: { item: any; type?: 'course' | 'app' | 'journey' }) => {
+  const { width, isDesktop, isTablet } = useResponsive();
+  const padding = getResponsivePadding(width);
+  const columns = getColumnsForScreen(width);
+  const cardWidth = getCardWidth(width, columns, padding);
   
   const getTypeIcon = () => {
     switch (type) {
@@ -35,8 +37,11 @@ const LibraryCard = ({ item, type = 'course' }: { item: any; type?: 'course' | '
     }
   };
 
+  // Altura do card baseada no tamanho da tela
+  const cardHeight = isDesktop ? 220 : isTablet ? 200 : 180;
+
   return (
-    <TouchableOpacity style={[styles.libraryCard, { width: cardWidth }]}>
+    <TouchableOpacity style={[styles.libraryCard, { width: cardWidth, height: cardHeight }]}>
       <ImageBackground
         source={{ uri: `https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=300&h=200&fit=crop` }}
         style={styles.cardBackground}
@@ -47,15 +52,26 @@ const LibraryCard = ({ item, type = 'course' }: { item: any; type?: 'course' | '
           style={styles.cardGradient}
         >
           <View style={styles.cardHeader}>
-            <View style={[styles.typeIndicator, { backgroundColor: getTypeColor() }]}>
-              <Text style={styles.typeIcon}>{getTypeIcon()}</Text>
+            <View style={[styles.typeIndicator, { 
+              backgroundColor: getTypeColor(),
+              width: isDesktop ? 36 : 32,
+              height: isDesktop ? 36 : 32,
+              borderRadius: isDesktop ? 18 : 16
+            }]}>
+              <Text style={[styles.typeIcon, { fontSize: isDesktop ? 18 : 16 }]}>{getTypeIcon()}</Text>
             </View>
           </View>
           
-          <View style={styles.cardContent}>
-            <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>
-            <Text style={styles.cardCategory}>{item.category}</Text>
-            <Text style={styles.cardLevel}>{item.level}</Text>
+          <View style={[styles.cardContent, { padding: isDesktop ? 16 : 12 }]}>
+            <Text style={[styles.cardTitle, { fontSize: isDesktop ? 16 : 14 }]} numberOfLines={2}>
+              {item.title}
+            </Text>
+            <Text style={[styles.cardCategory, { fontSize: isDesktop ? 13 : 12 }]}>
+              {item.category}
+            </Text>
+            <Text style={[styles.cardLevel, { fontSize: isDesktop ? 13 : 12 }]}>
+              {item.level}
+            </Text>
           </View>
         </LinearGradient>
       </ImageBackground>
@@ -63,31 +79,40 @@ const LibraryCard = ({ item, type = 'course' }: { item: any; type?: 'course' | '
   );
 };
 
-// Componente de filtro de categoria
-const CategoryFilter = ({ categories, selectedCategory, onSelectCategory }: {
+// Componente de filtro de categoria responsivo
+const ResponsiveCategoryFilter = ({ categories, selectedCategory, onSelectCategory }: {
   categories: string[];
   selectedCategory: string;
   onSelectCategory: (category: string) => void;
 }) => {
+  const { width, isDesktop } = useResponsive();
+  const padding = getResponsivePadding(width);
+
   return (
     <ScrollView 
       horizontal 
       showsHorizontalScrollIndicator={false}
       style={styles.categoryFilter}
-      contentContainerStyle={styles.categoryFilterContent}
+      contentContainerStyle={[styles.categoryFilterContent, { paddingHorizontal: padding }]}
     >
       {categories.map((category) => (
         <TouchableOpacity
           key={category}
           style={[
             styles.categoryButton,
-            selectedCategory === category && styles.categoryButtonActive
+            selectedCategory === category && styles.categoryButtonActive,
+            { 
+              paddingHorizontal: isDesktop ? 24 : 20,
+              paddingVertical: isDesktop ? 12 : 10,
+              marginRight: isDesktop ? 16 : 12
+            }
           ]}
           onPress={() => onSelectCategory(category)}
         >
           <Text style={[
             styles.categoryButtonText,
-            selectedCategory === category && styles.categoryButtonTextActive
+            selectedCategory === category && styles.categoryButtonTextActive,
+            { fontSize: isDesktop ? 16 : 14 }
           ]}>
             {category}
           </Text>
@@ -97,14 +122,26 @@ const CategoryFilter = ({ categories, selectedCategory, onSelectCategory }: {
   );
 };
 
-// Componente de seção de conteúdo
-const ContentSection = ({ title, data, type }: { title: string; data: any[]; type: 'course' | 'app' | 'journey' }) => {
+// Componente de seção de conteúdo responsivo
+const ResponsiveContentSection = ({ title, data, type }: { title: string; data: any[]; type: 'course' | 'app' | 'journey' }) => {
+  const { width, isDesktop } = useResponsive();
+  const padding = getResponsivePadding(width);
+  const columns = getColumnsForScreen(width);
+
   return (
-    <View style={styles.contentSection}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <View style={styles.contentGrid}>
+    <View style={[styles.contentSection, { marginBottom: isDesktop ? 40 : 30 }]}>
+      <Text style={[styles.sectionTitle, { 
+        fontSize: isDesktop ? 24 : 20,
+        paddingHorizontal: padding
+      }]}>
+        {title}
+      </Text>
+      <View style={[styles.contentGrid, { 
+        paddingHorizontal: padding,
+        gap: isDesktop ? 16 : 12
+      }]}>
         {data.map((item, index) => (
-          <LibraryCard key={item.id || index} item={item} type={type} />
+          <ResponsiveLibraryCard key={item.id || index} item={item} type={type} />
         ))}
       </View>
     </View>
@@ -115,6 +152,8 @@ export default function LibraryScreen() {
   const { courses } = useApp();
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
+  const { width, isDesktop, isTablet } = useResponsive();
+  const padding = getResponsivePadding(width);
 
   // Dados mockados para apps e jornadas
   const apps = [
@@ -190,18 +229,26 @@ export default function LibraryScreen() {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Biblioteca</Text>
-          <TouchableOpacity style={styles.searchButton}>
-            <Text style={styles.searchIcon}>🔍</Text>
+        {/* Header responsivo */}
+        <View style={[styles.header, { paddingHorizontal: padding }]}>
+          <Text style={[styles.headerTitle, { fontSize: isDesktop ? 32 : 28 }]}>Biblioteca</Text>
+          <TouchableOpacity style={[styles.searchButton, {
+            width: isDesktop ? 44 : 40,
+            height: isDesktop ? 44 : 40,
+            borderRadius: isDesktop ? 22 : 20
+          }]}>
+            <Text style={[styles.searchIcon, { fontSize: isDesktop ? 20 : 18 }]}>🔍</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Barra de busca */}
-        <View style={styles.searchContainer}>
+        {/* Barra de busca responsiva */}
+        <View style={[styles.searchContainer, { paddingHorizontal: padding }]}>
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { 
+              paddingHorizontal: isDesktop ? 20 : 16,
+              paddingVertical: isDesktop ? 16 : 12,
+              fontSize: isDesktop ? 18 : 16
+            }]}
             placeholder="Buscar cursos, apps ou jornadas..."
             placeholderTextColor="#666"
             value={searchQuery}
@@ -209,39 +256,43 @@ export default function LibraryScreen() {
           />
         </View>
 
-        {/* Filtros de categoria */}
-        <CategoryFilter
+        {/* Filtros de categoria responsivos */}
+        <ResponsiveCategoryFilter
           categories={categories}
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
         />
 
-        {/* Conteúdo */}
+        {/* Conteúdo responsivo */}
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Cursos */}
           {filteredCourses.length > 0 && (
-            <ContentSection title="Cursos" data={filteredCourses} type="course" />
+            <ResponsiveContentSection title="Cursos" data={filteredCourses} type="course" />
           )}
 
           {/* Apps */}
           {filteredApps.length > 0 && (
-            <ContentSection title="Aplicativos" data={filteredApps} type="app" />
+            <ResponsiveContentSection title="Aplicativos" data={filteredApps} type="app" />
           )}
 
           {/* Jornadas */}
           {filteredJourneys.length > 0 && (
-            <ContentSection title="Jornadas" data={filteredJourneys} type="journey" />
+            <ResponsiveContentSection title="Jornadas" data={filteredJourneys} type="journey" />
           )}
 
           {/* Mensagem quando não há resultados */}
           {filteredCourses.length === 0 && filteredApps.length === 0 && filteredJourneys.length === 0 && (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>Nenhum conteúdo encontrado</Text>
-              <Text style={styles.emptyStateSubtext}>Tente ajustar os filtros ou termo de busca</Text>
+            <View style={[styles.emptyState, { paddingHorizontal: padding }]}>
+              <Text style={[styles.emptyStateText, { fontSize: isDesktop ? 20 : 18 }]}>
+                Nenhum conteúdo encontrado
+              </Text>
+              <Text style={[styles.emptyStateSubtext, { fontSize: isDesktop ? 16 : 14 }]}>
+                Tente ajustar os filtros ou termo de busca
+              </Text>
             </View>
           )}
 
-          <View style={styles.bottomSpacing} />
+          <View style={[styles.bottomSpacing, { height: isDesktop ? 120 : 100 }]} />
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -260,37 +311,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
     paddingVertical: 16,
+    paddingTop: Platform.OS === 'web' ? 20 : 16,
   },
   headerTitle: {
-    fontSize: 28,
     fontWeight: 'bold',
     color: '#fff',
   },
   searchButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
     backgroundColor: '#333',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  searchIcon: {
-    fontSize: 18,
-  },
+  searchIcon: {},
   
   // Busca
   searchContainer: {
-    paddingHorizontal: 20,
     marginBottom: 20,
   },
   searchInput: {
     backgroundColor: '#333',
     borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
     color: '#fff',
   },
 
@@ -298,22 +339,16 @@ const styles = StyleSheet.create({
   categoryFilter: {
     marginBottom: 20,
   },
-  categoryFilterContent: {
-    paddingHorizontal: 20,
-  },
+  categoryFilterContent: {},
   categoryButton: {
     backgroundColor: '#333',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
     borderRadius: 20,
-    marginRight: 12,
   },
   categoryButtonActive: {
     backgroundColor: '#AADD00',
   },
   categoryButtonText: {
     color: '#fff',
-    fontSize: 14,
     fontWeight: '500',
   },
   categoryButtonTextActive: {
@@ -325,26 +360,20 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  contentSection: {
-    marginBottom: 30,
-  },
+  contentSection: {},
   sectionTitle: {
-    fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
-    paddingHorizontal: 20,
     marginBottom: 16,
   },
   contentGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 20,
     justifyContent: 'space-between',
   },
 
   // Cards da biblioteca
   libraryCard: {
-    height: 200,
     borderRadius: 8,
     marginBottom: 16,
     overflow: 'hidden',
@@ -362,32 +391,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   typeIndicator: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  typeIcon: {
-    fontSize: 16,
-  },
-  cardContent: {
-    padding: 12,
-  },
+  typeIcon: {},
+  cardContent: {},
   cardTitle: {
-    fontSize: 14,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 4,
-    lineHeight: 18,
+    lineHeight: 1.2,
   },
   cardCategory: {
-    fontSize: 12,
     color: '#ccc',
     marginBottom: 2,
   },
   cardLevel: {
-    fontSize: 12,
     color: '#AADD00',
     fontWeight: '600',
   },
@@ -396,22 +415,17 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
-    paddingHorizontal: 40,
   },
   emptyStateText: {
-    fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 8,
     textAlign: 'center',
   },
   emptyStateSubtext: {
-    fontSize: 14,
     color: '#ccc',
     textAlign: 'center',
   },
-  bottomSpacing: {
-    height: 100,
-  },
+  bottomSpacing: {},
 });
 

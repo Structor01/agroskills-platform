@@ -6,22 +6,34 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  Dimensions,
   ImageBackground,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useApp, useInProgressCourses, useRecommendedCourses } from '@/contexts/AppContext';
 import { calculateOverallProgress } from '@/data/progress';
+import { useResponsive, getCardWidth, getColumnsForScreen, getResponsivePadding } from '@/hooks/useResponsive';
 
-const { width } = Dimensions.get('window');
+// Componente de card de curso responsivo
+const ResponsiveNetflixCard = ({ course, progress, index }: { course: any; progress?: any; index: number }) => {
+  const { width, isDesktop, isTablet, isMobile } = useResponsive();
+  const padding = getResponsivePadding(width);
+  
+  // Calcular largura do card baseado no tamanho da tela
+  const getCardDimensions = () => {
+    if (isDesktop) {
+      return { width: 280, height: 160 }; // Cards maiores no desktop
+    } else if (isTablet) {
+      return { width: 240, height: 140 }; // Cards médios no tablet
+    } else {
+      return { width: 200, height: 120 }; // Cards menores no mobile
+    }
+  };
 
-// Componente de card de curso estilo Netflix
-const NetflixCourseCard = ({ course, progress, size = 'medium' }: { course: any; progress?: any; size?: 'small' | 'medium' | 'large' }) => {
-  const cardWidth = size === 'large' ? width * 0.8 : size === 'medium' ? width * 0.6 : width * 0.4;
-  const cardHeight = size === 'large' ? 200 : size === 'medium' ? 160 : 120;
+  const cardDimensions = getCardDimensions();
 
   return (
-    <TouchableOpacity style={[styles.netflixCard, { width: cardWidth, height: cardHeight }]}>
+    <TouchableOpacity style={[styles.netflixCard, cardDimensions, { marginRight: isDesktop ? 16 : 12 }]}>
       <ImageBackground
         source={{ uri: `https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400&h=300&fit=crop&crop=center` }}
         style={styles.cardBackground}
@@ -32,19 +44,23 @@ const NetflixCourseCard = ({ course, progress, size = 'medium' }: { course: any;
           style={styles.cardGradient}
         >
           <View style={styles.cardContent}>
-            <Text style={styles.cardTitle} numberOfLines={2}>{course.title}</Text>
+            <Text style={[styles.cardTitle, { fontSize: isDesktop ? 16 : 14 }]} numberOfLines={2}>
+              {course.title}
+            </Text>
             {progress && (
               <View style={styles.progressContainer}>
                 <View style={styles.progressBar}>
                   <View style={[styles.progressFill, { width: `${progress.progress}%` }]} />
                 </View>
-                <Text style={styles.progressText}>{progress.progress}% concluído</Text>
+                <Text style={[styles.progressText, { fontSize: isDesktop ? 12 : 11 }]}>
+                  {progress.progress}% concluído
+                </Text>
               </View>
             )}
             {!progress && (
               <View style={styles.courseMetadata}>
-                <Text style={styles.courseLevel}>{course.level}</Text>
-                <Text style={styles.courseDuration}>{course.duration}</Text>
+                <Text style={[styles.courseLevel, { fontSize: isDesktop ? 12 : 11 }]}>{course.level}</Text>
+                <Text style={[styles.courseDuration, { fontSize: isDesktop ? 12 : 11 }]}>{course.duration}</Text>
               </View>
             )}
           </View>
@@ -54,34 +70,36 @@ const NetflixCourseCard = ({ course, progress, size = 'medium' }: { course: any;
   );
 };
 
-// Componente de carrossel horizontal
-const NetflixCarousel = ({ title, data, showProgress = false, size = 'medium' }: { 
+// Componente de carrossel responsivo
+const ResponsiveCarousel = ({ title, data, showProgress = false }: { 
   title: string; 
   data: any[]; 
   showProgress?: boolean; 
-  size?: 'small' | 'medium' | 'large' 
 }) => {
+  const { width, isDesktop } = useResponsive();
+  const padding = getResponsivePadding(width);
+
   return (
-    <View style={styles.carouselSection}>
-      <View style={styles.carouselHeader}>
-        <Text style={styles.carouselTitle}>{title}</Text>
+    <View style={[styles.carouselSection, { marginBottom: isDesktop ? 40 : 30 }]}>
+      <View style={[styles.carouselHeader, { paddingHorizontal: padding }]}>
+        <Text style={[styles.carouselTitle, { fontSize: isDesktop ? 24 : 20 }]}>{title}</Text>
         <TouchableOpacity>
-          <Text style={styles.seeAllText}>Ver todos</Text>
+          <Text style={[styles.seeAllText, { fontSize: isDesktop ? 16 : 14 }]}>Ver todos</Text>
         </TouchableOpacity>
       </View>
       
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false} 
-        style={styles.carouselScroll}
-        contentContainerStyle={styles.carouselContent}
+        style={[styles.carouselScroll, { paddingLeft: padding }]}
+        contentContainerStyle={[styles.carouselContent, { paddingRight: padding }]}
       >
         {data.map((item, index) => (
-          <NetflixCourseCard 
+          <ResponsiveNetflixCard 
             key={item.id || index} 
             course={item} 
             progress={showProgress ? { progress: 65 } : undefined}
-            size={size}
+            index={index}
           />
         ))}
       </ScrollView>
@@ -89,10 +107,16 @@ const NetflixCarousel = ({ title, data, showProgress = false, size = 'medium' }:
   );
 };
 
-// Componente de hero banner principal
-const HeroBanner = ({ course }: { course: any }) => {
+// Componente de hero banner responsivo
+const ResponsiveHeroBanner = ({ course }: { course: any }) => {
+  const { width, height, isDesktop, isTablet, isMobile } = useResponsive();
+  const padding = getResponsivePadding(width);
+
+  // Altura do hero baseada no tamanho da tela
+  const heroHeight = isDesktop ? 500 : isTablet ? 400 : 350;
+
   return (
-    <View style={styles.heroBanner}>
+    <View style={[styles.heroBanner, { height: heroHeight }]}>
       <ImageBackground
         source={{ uri: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800&h=400&fit=crop' }}
         style={styles.heroBackground}
@@ -102,20 +126,44 @@ const HeroBanner = ({ course }: { course: any }) => {
           colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
           style={styles.heroGradient}
         >
-          <View style={styles.heroContent}>
-            <Text style={styles.heroCategory}>DESTAQUE</Text>
-            <Text style={styles.heroTitle}>{course.title}</Text>
-            <Text style={styles.heroDescription} numberOfLines={3}>
+          <View style={[styles.heroContent, { paddingHorizontal: padding }]}>
+            <Text style={[styles.heroCategory, { fontSize: isDesktop ? 16 : 12 }]}>DESTAQUE</Text>
+            <Text style={[styles.heroTitle, { 
+              fontSize: isDesktop ? 48 : isTablet ? 36 : 28,
+              maxWidth: isDesktop ? '60%' : '90%'
+            }]}>
+              {course.title}
+            </Text>
+            <Text style={[styles.heroDescription, { 
+              fontSize: isDesktop ? 18 : 16,
+              maxWidth: isDesktop ? '50%' : '85%'
+            }]} numberOfLines={isDesktop ? 4 : 3}>
               {course.description}
             </Text>
             
-            <View style={styles.heroActions}>
-              <TouchableOpacity style={styles.playButton}>
-                <Text style={styles.playButtonText}>▶ Continuar</Text>
+            <View style={[styles.heroActions, { 
+              flexDirection: isDesktop ? 'row' : 'column',
+              alignItems: isDesktop ? 'center' : 'stretch',
+              gap: isDesktop ? 16 : 12
+            }]}>
+              <TouchableOpacity style={[styles.playButton, { 
+                paddingHorizontal: isDesktop ? 40 : 32,
+                paddingVertical: isDesktop ? 16 : 12,
+                flex: isDesktop ? 0 : 1
+              }]}>
+                <Text style={[styles.playButtonText, { fontSize: isDesktop ? 18 : 16 }]}>
+                  ▶ Continuar
+                </Text>
               </TouchableOpacity>
               
-              <TouchableOpacity style={styles.infoButton}>
-                <Text style={styles.infoButtonText}>ℹ Mais informações</Text>
+              <TouchableOpacity style={[styles.infoButton, { 
+                paddingHorizontal: isDesktop ? 32 : 24,
+                paddingVertical: isDesktop ? 16 : 12,
+                flex: isDesktop ? 0 : 1
+              }]}>
+                <Text style={[styles.infoButtonText, { fontSize: isDesktop ? 18 : 16 }]}>
+                  ℹ Mais informações
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -130,67 +178,63 @@ export default function DashboardScreen() {
   const inProgressCourses = useInProgressCourses();
   const recommendedCourses = useRecommendedCourses();
   const overallProgress = currentUser ? calculateOverallProgress(currentUser.id) : 0;
+  const { width, isDesktop, isTablet } = useResponsive();
+  const padding = getResponsivePadding(width);
 
-  // Curso em destaque (primeiro curso em progresso ou recomendado)
+  // Curso em destaque
   const featuredCourse = inProgressCourses[0] || recommendedCourses[0] || courses[0];
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header minimalista */}
-        <View style={styles.header}>
+        {/* Header responsivo */}
+        <View style={[styles.header, { paddingHorizontal: padding }]}>
           <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>AGRO</Text>
-            <Text style={styles.logoTextGreen}>SKILLS</Text>
+            <Text style={[styles.logoText, { fontSize: isDesktop ? 28 : 24 }]}>AGRO</Text>
+            <Text style={[styles.logoTextGreen, { fontSize: isDesktop ? 28 : 24 }]}>SKILLS</Text>
           </View>
-          <TouchableOpacity style={styles.profileButton}>
-            <Text style={styles.profileIcon}>👤</Text>
+          <TouchableOpacity style={[styles.profileButton, { 
+            width: isDesktop ? 40 : 32,
+            height: isDesktop ? 40 : 32
+          }]}>
+            <Text style={[styles.profileIcon, { fontSize: isDesktop ? 20 : 16 }]}>👤</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Hero Banner */}
-        <HeroBanner course={featuredCourse} />
+        {/* Hero Banner Responsivo */}
+        <ResponsiveHeroBanner course={featuredCourse} />
 
-        {/* Continuar assistindo */}
+        {/* Carrosséis Responsivos */}
         {inProgressCourses.length > 0 && (
-          <NetflixCarousel 
+          <ResponsiveCarousel 
             title="Continuar de onde parou" 
             data={inProgressCourses} 
             showProgress={true}
-            size="large"
           />
         )}
 
-        {/* Recomendados para você */}
-        <NetflixCarousel 
+        <ResponsiveCarousel 
           title="Recomendado para você" 
           data={recommendedCourses} 
-          size="medium"
         />
 
-        {/* Tecnologia no Agro */}
-        <NetflixCarousel 
+        <ResponsiveCarousel 
           title="Tecnologia no Agro" 
           data={courses.filter(c => c.category === 'Tecnologia')} 
-          size="medium"
         />
 
-        {/* Gestão e Liderança */}
-        <NetflixCarousel 
+        <ResponsiveCarousel 
           title="Gestão e Liderança" 
           data={courses.filter(c => c.category === 'Gestão')} 
-          size="medium"
         />
 
-        {/* Sustentabilidade */}
-        <NetflixCarousel 
+        <ResponsiveCarousel 
           title="Sustentabilidade" 
           data={courses.filter(c => c.category === 'Sustentabilidade')} 
-          size="medium"
         />
 
-        {/* Espaçamento final */}
-        <View style={styles.bottomSpacing} />
+        {/* Espaçamento final responsivo */}
+        <View style={[styles.bottomSpacing, { height: isDesktop ? 120 : 100 }]} />
       </ScrollView>
     </View>
   );
@@ -208,8 +252,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 60,
+    paddingTop: Platform.OS === 'web' ? 40 : 60,
     paddingBottom: 20,
     backgroundColor: 'transparent',
     position: 'absolute',
@@ -223,31 +266,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoText: {
-    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
   },
   logoTextGreen: {
-    fontSize: 24,
     fontWeight: 'bold',
     color: '#AADD00',
   },
   profileButton: {
-    width: 32,
-    height: 32,
     borderRadius: 4,
     backgroundColor: '#333',
     justifyContent: 'center',
     alignItems: 'center',
   },
   profileIcon: {
-    fontSize: 16,
     color: '#fff',
   },
   
   // Hero Banner
   heroBanner: {
-    height: 400,
     marginBottom: 20,
   },
   heroBackground: {
@@ -257,95 +294,74 @@ const styles = StyleSheet.create({
   heroGradient: {
     flex: 1,
     justifyContent: 'flex-end',
-    paddingHorizontal: 20,
     paddingBottom: 40,
   },
   heroContent: {
-    maxWidth: '80%',
+    maxWidth: '100%',
   },
   heroCategory: {
-    fontSize: 12,
     color: '#fff',
     fontWeight: 'bold',
     letterSpacing: 2,
     marginBottom: 8,
   },
   heroTitle: {
-    fontSize: 32,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 12,
-    lineHeight: 36,
+    lineHeight: 1.2,
   },
   heroDescription: {
-    fontSize: 16,
     color: '#ccc',
-    lineHeight: 22,
+    lineHeight: 1.4,
     marginBottom: 24,
   },
   heroActions: {
-    flexDirection: 'row',
-    gap: 12,
+    width: '100%',
   },
   playButton: {
     backgroundColor: '#fff',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
     borderRadius: 6,
-    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   playButtonText: {
     color: '#000',
-    fontSize: 16,
     fontWeight: 'bold',
   },
   infoButton: {
     backgroundColor: 'rgba(255,255,255,0.3)',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
     borderRadius: 6,
-    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   infoButtonText: {
     color: '#fff',
-    fontSize: 16,
     fontWeight: '600',
   },
 
   // Carrossel
-  carouselSection: {
-    marginBottom: 30,
-  },
+  carouselSection: {},
   carouselHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
     marginBottom: 16,
   },
   carouselTitle: {
-    fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
   },
   seeAllText: {
-    fontSize: 14,
     color: '#ccc',
     fontWeight: '500',
   },
-  carouselScroll: {
-    paddingLeft: 20,
-  },
-  carouselContent: {
-    paddingRight: 20,
-  },
+  carouselScroll: {},
+  carouselContent: {},
 
   // Cards Netflix
   netflixCard: {
     borderRadius: 8,
-    marginRight: 12,
     overflow: 'hidden',
     backgroundColor: '#222',
   },
@@ -357,14 +373,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   cardContent: {
-    padding: 16,
+    padding: 12,
   },
   cardTitle: {
-    fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 8,
-    lineHeight: 20,
+    lineHeight: 1.2,
   },
   progressContainer: {
     marginTop: 8,
@@ -381,7 +396,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   progressText: {
-    fontSize: 12,
     color: '#ccc',
   },
   courseMetadata: {
@@ -390,16 +404,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   courseLevel: {
-    fontSize: 12,
     color: '#AADD00',
     fontWeight: '600',
   },
   courseDuration: {
-    fontSize: 12,
     color: '#ccc',
   },
-  bottomSpacing: {
-    height: 100,
-  },
+  bottomSpacing: {},
 });
 

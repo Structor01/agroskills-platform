@@ -6,46 +6,67 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  Dimensions,
   ImageBackground,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useApp } from '@/contexts/AppContext';
+import { useResponsive, getCardWidth, getColumnsForScreen, getResponsivePadding } from '@/hooks/useResponsive';
 
-const { width, height } = Dimensions.get('window');
+// Componente de módulo/episódio responsivo
+const ResponsiveModuleItem = ({ module, index, isCompleted }: { module: any; index: number; isCompleted: boolean }) => {
+  const { isDesktop, isTablet } = useResponsive();
 
-// Componente de módulo/episódio
-const ModuleItem = ({ module, index, isCompleted }: { module: any; index: number; isCompleted: boolean }) => {
   return (
-    <TouchableOpacity style={styles.moduleItem}>
-      <View style={styles.moduleNumber}>
-        <Text style={styles.moduleNumberText}>{index + 1}</Text>
+    <TouchableOpacity style={[styles.moduleItem, { 
+      paddingVertical: isDesktop ? 20 : 16,
+      paddingHorizontal: isDesktop ? 20 : 0
+    }]}>
+      <View style={[styles.moduleNumber, {
+        width: isDesktop ? 48 : 40,
+        height: isDesktop ? 48 : 40,
+        borderRadius: isDesktop ? 24 : 20,
+        marginRight: isDesktop ? 20 : 16
+      }]}>
+        <Text style={[styles.moduleNumberText, { fontSize: isDesktop ? 18 : 16 }]}>
+          {index + 1}
+        </Text>
       </View>
       
       <View style={styles.moduleContent}>
-        <Text style={styles.moduleTitle}>{module.title}</Text>
-        <Text style={styles.moduleDescription} numberOfLines={2}>
+        <Text style={[styles.moduleTitle, { fontSize: isDesktop ? 18 : 16 }]}>
+          {module.title}
+        </Text>
+        <Text style={[styles.moduleDescription, { fontSize: isDesktop ? 16 : 14 }]} numberOfLines={2}>
           {module.description}
         </Text>
-        <Text style={styles.moduleDuration}>{module.duration}</Text>
+        <Text style={[styles.moduleDuration, { fontSize: isDesktop ? 14 : 12 }]}>
+          {module.duration}
+        </Text>
       </View>
       
-      <View style={styles.moduleStatus}>
+      <View style={[styles.moduleStatus, { width: isDesktop ? 48 : 40 }]}>
         {isCompleted ? (
-          <Text style={styles.completedIcon}>✓</Text>
+          <Text style={[styles.completedIcon, { fontSize: isDesktop ? 24 : 20 }]}>✓</Text>
         ) : (
-          <Text style={styles.playIcon}>▶</Text>
+          <Text style={[styles.playIcon, { fontSize: isDesktop ? 20 : 16 }]}>▶</Text>
         )}
       </View>
     </TouchableOpacity>
   );
 };
 
-// Componente de curso relacionado
-const RelatedCourseCard = ({ course }: { course: any }) => {
+// Componente de curso relacionado responsivo
+const ResponsiveRelatedCourseCard = ({ course }: { course: any }) => {
+  const { width, isDesktop } = useResponsive();
+  const padding = getResponsivePadding(width);
+  const columns = getColumnsForScreen(width);
+  const cardWidth = getCardWidth(width, columns, padding);
+  const cardHeight = isDesktop ? 140 : 120;
+
   return (
-    <TouchableOpacity style={styles.relatedCard}>
+    <TouchableOpacity style={[styles.relatedCard, { width: cardWidth, height: cardHeight }]}>
       <ImageBackground
         source={{ uri: `https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=300&h=200&fit=crop` }}
         style={styles.relatedCardBackground}
@@ -55,9 +76,13 @@ const RelatedCourseCard = ({ course }: { course: any }) => {
           colors={['transparent', 'rgba(0,0,0,0.8)']}
           style={styles.relatedCardGradient}
         >
-          <View style={styles.relatedCardContent}>
-            <Text style={styles.relatedCardTitle} numberOfLines={2}>{course.title}</Text>
-            <Text style={styles.relatedCardLevel}>{course.level}</Text>
+          <View style={[styles.relatedCardContent, { padding: isDesktop ? 16 : 12 }]}>
+            <Text style={[styles.relatedCardTitle, { fontSize: isDesktop ? 16 : 14 }]} numberOfLines={2}>
+              {course.title}
+            </Text>
+            <Text style={[styles.relatedCardLevel, { fontSize: isDesktop ? 13 : 12 }]}>
+              {course.level}
+            </Text>
           </View>
         </LinearGradient>
       </ImageBackground>
@@ -70,6 +95,8 @@ export default function CourseDetailScreen() {
   const { id } = useLocalSearchParams();
   const { courses, currentUser } = useApp();
   const [selectedTab, setSelectedTab] = useState('episodes');
+  const { width, height, isDesktop, isTablet, isMobile } = useResponsive();
+  const padding = getResponsivePadding(width);
 
   // Encontrar o curso pelo ID (simulado)
   const course = courses.find(c => c.id === id) || courses[0];
@@ -102,14 +129,17 @@ export default function CourseDetailScreen() {
     }
   ];
 
-  const relatedCourses = courses.filter(c => c.id !== course.id).slice(0, 3);
+  const relatedCourses = courses.filter(c => c.id !== course.id).slice(0, isDesktop ? 4 : 3);
   const completedModules = ['1', '2']; // Simulado
+
+  // Altura do hero baseada no tamanho da tela
+  const heroHeight = isDesktop ? height * 0.7 : isTablet ? height * 0.6 : height * 0.5;
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Hero Section */}
-        <View style={styles.heroSection}>
+        {/* Hero Section Responsivo */}
+        <View style={[styles.heroSection, { height: heroHeight }]}>
           <ImageBackground
             source={{ uri: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800&h=500&fit=crop' }}
             style={styles.heroBackground}
@@ -120,34 +150,79 @@ export default function CourseDetailScreen() {
               style={styles.heroGradient}
             >
               {/* Header */}
-              <SafeAreaView style={styles.headerContainer}>
+              <SafeAreaView style={[styles.headerContainer, { paddingHorizontal: padding }]}>
                 <TouchableOpacity 
-                  style={styles.backButton}
+                  style={[styles.backButton, {
+                    width: isDesktop ? 48 : 40,
+                    height: isDesktop ? 48 : 40,
+                    borderRadius: isDesktop ? 24 : 20
+                  }]}
                   onPress={() => router.back()}
                 >
-                  <Text style={styles.backButtonText}>←</Text>
+                  <Text style={[styles.backButtonText, { fontSize: isDesktop ? 24 : 20 }]}>←</Text>
                 </TouchableOpacity>
               </SafeAreaView>
 
               {/* Hero Content */}
-              <View style={styles.heroContent}>
-                <Text style={styles.courseCategory}>{course.category}</Text>
-                <Text style={styles.courseTitle}>{course.title}</Text>
-                <Text style={styles.courseDescription}>{course.description}</Text>
+              <View style={[styles.heroContent, { 
+                paddingHorizontal: padding,
+                maxWidth: isDesktop ? '60%' : '90%'
+              }]}>
+                <Text style={[styles.courseCategory, { fontSize: isDesktop ? 16 : 14 }]}>
+                  {course.category}
+                </Text>
+                <Text style={[styles.courseTitle, { 
+                  fontSize: isDesktop ? 36 : isTablet ? 32 : 28,
+                  lineHeight: isDesktop ? 42 : isTablet ? 38 : 32
+                }]}>
+                  {course.title}
+                </Text>
+                <Text style={[styles.courseDescription, { 
+                  fontSize: isDesktop ? 18 : 16,
+                  lineHeight: isDesktop ? 26 : 22
+                }]}>
+                  {course.description}
+                </Text>
                 
-                <View style={styles.courseMetadata}>
-                  <Text style={styles.metadataItem}>⭐ {course.level}</Text>
-                  <Text style={styles.metadataItem}>🕒 {course.duration}</Text>
-                  <Text style={styles.metadataItem}>📚 {courseModules.length} módulos</Text>
+                <View style={[styles.courseMetadata, { 
+                  flexDirection: isDesktop ? 'row' : 'column',
+                  alignItems: isDesktop ? 'center' : 'flex-start',
+                  gap: isDesktop ? 24 : 8
+                }]}>
+                  <Text style={[styles.metadataItem, { fontSize: isDesktop ? 16 : 14 }]}>
+                    ⭐ {course.level}
+                  </Text>
+                  <Text style={[styles.metadataItem, { fontSize: isDesktop ? 16 : 14 }]}>
+                    🕒 {course.duration}
+                  </Text>
+                  <Text style={[styles.metadataItem, { fontSize: isDesktop ? 16 : 14 }]}>
+                    📚 {courseModules.length} módulos
+                  </Text>
                 </View>
 
-                <View style={styles.heroActions}>
-                  <TouchableOpacity style={styles.playButton}>
-                    <Text style={styles.playButtonText}>▶ Começar curso</Text>
+                <View style={[styles.heroActions, { 
+                  flexDirection: isDesktop ? 'row' : 'column',
+                  gap: isDesktop ? 16 : 12,
+                  maxWidth: isDesktop ? 400 : '100%'
+                }]}>
+                  <TouchableOpacity style={[styles.playButton, { 
+                    paddingHorizontal: isDesktop ? 40 : 32,
+                    paddingVertical: isDesktop ? 16 : 12,
+                    flex: isDesktop ? 1 : 0
+                  }]}>
+                    <Text style={[styles.playButtonText, { fontSize: isDesktop ? 18 : 16 }]}>
+                      ▶ Começar curso
+                    </Text>
                   </TouchableOpacity>
                   
-                  <TouchableOpacity style={styles.addButton}>
-                    <Text style={styles.addButtonText}>+ Minha lista</Text>
+                  <TouchableOpacity style={[styles.addButton, { 
+                    paddingHorizontal: isDesktop ? 32 : 24,
+                    paddingVertical: isDesktop ? 16 : 12,
+                    flex: isDesktop ? 0 : 0
+                  }]}>
+                    <Text style={[styles.addButtonText, { fontSize: isDesktop ? 18 : 16 }]}>
+                      + Minha lista
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -155,43 +230,45 @@ export default function CourseDetailScreen() {
           </ImageBackground>
         </View>
 
-        {/* Tabs */}
-        <View style={styles.tabsContainer}>
-          <TouchableOpacity
-            style={[styles.tab, selectedTab === 'episodes' && styles.tabActive]}
-            onPress={() => setSelectedTab('episodes')}
-          >
-            <Text style={[styles.tabText, selectedTab === 'episodes' && styles.tabTextActive]}>
-              Módulos
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.tab, selectedTab === 'details' && styles.tabActive]}
-            onPress={() => setSelectedTab('details')}
-          >
-            <Text style={[styles.tabText, selectedTab === 'details' && styles.tabTextActive]}>
-              Detalhes
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.tab, selectedTab === 'related' && styles.tabActive]}
-            onPress={() => setSelectedTab('related')}
-          >
-            <Text style={[styles.tabText, selectedTab === 'related' && styles.tabTextActive]}>
-              Relacionados
-            </Text>
-          </TouchableOpacity>
+        {/* Tabs Responsivos */}
+        <View style={[styles.tabsContainer, { paddingHorizontal: padding }]}>
+          {['episodes', 'details', 'related'].map((tab) => {
+            const tabLabels = { episodes: 'Módulos', details: 'Detalhes', related: 'Relacionados' };
+            return (
+              <TouchableOpacity
+                key={tab}
+                style={[
+                  styles.tab,
+                  selectedTab === tab && styles.tabActive,
+                  { 
+                    paddingHorizontal: isDesktop ? 20 : 16,
+                    paddingVertical: isDesktop ? 12 : 8,
+                    marginRight: isDesktop ? 20 : 16
+                  }
+                ]}
+                onPress={() => setSelectedTab(tab)}
+              >
+                <Text style={[
+                  styles.tabText,
+                  selectedTab === tab && styles.tabTextActive,
+                  { fontSize: isDesktop ? 18 : 16 }
+                ]}>
+                  {tabLabels[tab as keyof typeof tabLabels]}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Tab Content */}
-        <View style={styles.tabContent}>
+        <View style={[styles.tabContent, { paddingHorizontal: padding }]}>
           {selectedTab === 'episodes' && (
             <View style={styles.episodesTab}>
-              <Text style={styles.sectionTitle}>Módulos do curso</Text>
+              <Text style={[styles.sectionTitle, { fontSize: isDesktop ? 24 : 20 }]}>
+                Módulos do curso
+              </Text>
               {courseModules.map((module, index) => (
-                <ModuleItem
+                <ResponsiveModuleItem
                   key={module.id}
                   module={module}
                   index={index}
@@ -203,29 +280,58 @@ export default function CourseDetailScreen() {
 
           {selectedTab === 'details' && (
             <View style={styles.detailsTab}>
-              <Text style={styles.sectionTitle}>Sobre este curso</Text>
-              <Text style={styles.detailsText}>
+              <Text style={[styles.sectionTitle, { fontSize: isDesktop ? 24 : 20 }]}>
+                Sobre este curso
+              </Text>
+              <Text style={[styles.detailsText, { 
+                fontSize: isDesktop ? 18 : 16,
+                lineHeight: isDesktop ? 28 : 24
+              }]}>
                 Este curso abrangente explora as tecnologias emergentes que estão transformando 
                 o setor agrícola. Você aprenderá sobre IoT, inteligência artificial, drones e 
                 outras inovações que estão revolucionando a agricultura moderna.
               </Text>
               
-              <Text style={styles.subsectionTitle}>O que você vai aprender</Text>
+              <Text style={[styles.subsectionTitle, { fontSize: isDesktop ? 20 : 18 }]}>
+                O que você vai aprender
+              </Text>
               <View style={styles.learningPoints}>
-                <Text style={styles.learningPoint}>• Fundamentos das tecnologias emergentes no agro</Text>
-                <Text style={styles.learningPoint}>• Implementação prática de IoT na agricultura</Text>
-                <Text style={styles.learningPoint}>• Aplicações de IA para otimização de processos</Text>
-                <Text style={styles.learningPoint}>• Uso de drones para agricultura de precisão</Text>
+                {[
+                  'Fundamentos das tecnologias emergentes no agro',
+                  'Implementação prática de IoT na agricultura',
+                  'Aplicações de IA para otimização de processos',
+                  'Uso de drones para agricultura de precisão'
+                ].map((point, index) => (
+                  <Text key={index} style={[styles.learningPoint, { 
+                    fontSize: isDesktop ? 16 : 14,
+                    lineHeight: isDesktop ? 24 : 20
+                  }]}>
+                    • {point}
+                  </Text>
+                ))}
               </View>
 
-              <Text style={styles.subsectionTitle}>Instrutor</Text>
+              <Text style={[styles.subsectionTitle, { fontSize: isDesktop ? 20 : 18 }]}>
+                Instrutor
+              </Text>
               <View style={styles.instructorInfo}>
-                <View style={styles.instructorAvatar}>
-                  <Text style={styles.instructorInitials}>DR</Text>
+                <View style={[styles.instructorAvatar, {
+                  width: isDesktop ? 60 : 50,
+                  height: isDesktop ? 60 : 50,
+                  borderRadius: isDesktop ? 30 : 25,
+                  marginRight: isDesktop ? 20 : 16
+                }]}>
+                  <Text style={[styles.instructorInitials, { fontSize: isDesktop ? 20 : 18 }]}>
+                    DR
+                  </Text>
                 </View>
                 <View style={styles.instructorDetails}>
-                  <Text style={styles.instructorName}>Dr. Roberto Silva</Text>
-                  <Text style={styles.instructorTitle}>Especialista em Tecnologia Agrícola</Text>
+                  <Text style={[styles.instructorName, { fontSize: isDesktop ? 18 : 16 }]}>
+                    Dr. Roberto Silva
+                  </Text>
+                  <Text style={[styles.instructorTitle, { fontSize: isDesktop ? 16 : 14 }]}>
+                    Especialista em Tecnologia Agrícola
+                  </Text>
                 </View>
               </View>
             </View>
@@ -233,17 +339,19 @@ export default function CourseDetailScreen() {
 
           {selectedTab === 'related' && (
             <View style={styles.relatedTab}>
-              <Text style={styles.sectionTitle}>Cursos relacionados</Text>
-              <View style={styles.relatedGrid}>
+              <Text style={[styles.sectionTitle, { fontSize: isDesktop ? 24 : 20 }]}>
+                Cursos relacionados
+              </Text>
+              <View style={[styles.relatedGrid, { gap: isDesktop ? 16 : 12 }]}>
                 {relatedCourses.map((relatedCourse) => (
-                  <RelatedCourseCard key={relatedCourse.id} course={relatedCourse} />
+                  <ResponsiveRelatedCourseCard key={relatedCourse.id} course={relatedCourse} />
                 ))}
               </View>
             </View>
           )}
         </View>
 
-        <View style={styles.bottomSpacing} />
+        <View style={[styles.bottomSpacing, { height: isDesktop ? 120 : 100 }]} />
       </ScrollView>
     </View>
   );
@@ -259,9 +367,7 @@ const styles = StyleSheet.create({
   },
   
   // Hero Section
-  heroSection: {
-    height: height * 0.6,
-  },
+  heroSection: {},
   heroBackground: {
     flex: 1,
   },
@@ -270,104 +376,76 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   headerContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: Platform.OS === 'web' ? 20 : 10,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   backButtonText: {
     color: '#fff',
-    fontSize: 20,
     fontWeight: 'bold',
   },
   heroContent: {
-    paddingHorizontal: 20,
     paddingBottom: 40,
   },
   courseCategory: {
-    fontSize: 14,
     color: '#AADD00',
     fontWeight: 'bold',
     letterSpacing: 1,
     marginBottom: 8,
   },
   courseTitle: {
-    fontSize: 28,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 12,
-    lineHeight: 32,
   },
   courseDescription: {
-    fontSize: 16,
     color: '#ccc',
-    lineHeight: 22,
     marginBottom: 16,
   },
   courseMetadata: {
-    flexDirection: 'row',
     marginBottom: 24,
   },
   metadataItem: {
-    fontSize: 14,
     color: '#ccc',
-    marginRight: 16,
   },
-  heroActions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
+  heroActions: {},
   playButton: {
     backgroundColor: '#fff',
-    paddingHorizontal: 32,
-    paddingVertical: 12,
     borderRadius: 6,
-    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   playButtonText: {
     color: '#000',
-    fontSize: 16,
     fontWeight: 'bold',
   },
   addButton: {
     backgroundColor: 'rgba(255,255,255,0.3)',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
     borderRadius: 6,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   addButtonText: {
     color: '#fff',
-    fontSize: 16,
     fontWeight: '600',
   },
 
   // Tabs
   tabsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#333',
   },
-  tab: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 16,
-  },
+  tab: {},
   tabActive: {
     borderBottomWidth: 2,
     borderBottomColor: '#AADD00',
   },
   tabText: {
-    fontSize: 16,
     color: '#ccc',
     fontWeight: '500',
   },
@@ -378,11 +456,9 @@ const styles = StyleSheet.create({
 
   // Tab Content
   tabContent: {
-    paddingHorizontal: 20,
     paddingTop: 20,
   },
   sectionTitle: {
-    fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 16,
@@ -393,65 +469,50 @@ const styles = StyleSheet.create({
   moduleItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#333',
   },
   moduleNumber: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
     backgroundColor: '#333',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
   },
   moduleNumberText: {
     color: '#fff',
-    fontSize: 16,
     fontWeight: 'bold',
   },
   moduleContent: {
     flex: 1,
   },
   moduleTitle: {
-    fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 4,
   },
   moduleDescription: {
-    fontSize: 14,
     color: '#ccc',
     marginBottom: 4,
   },
   moduleDuration: {
-    fontSize: 12,
     color: '#AADD00',
   },
   moduleStatus: {
-    width: 40,
     alignItems: 'center',
   },
   completedIcon: {
-    fontSize: 20,
     color: '#AADD00',
   },
   playIcon: {
-    fontSize: 16,
     color: '#ccc',
   },
 
   // Details Tab
   detailsTab: {},
   detailsText: {
-    fontSize: 16,
     color: '#ccc',
-    lineHeight: 24,
     marginBottom: 24,
   },
   subsectionTitle: {
-    fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 12,
@@ -460,38 +521,29 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   learningPoint: {
-    fontSize: 14,
     color: '#ccc',
     marginBottom: 8,
-    lineHeight: 20,
   },
   instructorInfo: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   instructorAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
     backgroundColor: '#AADD00',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
   },
   instructorInitials: {
-    fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
   },
   instructorDetails: {},
   instructorName: {
-    fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 4,
   },
   instructorTitle: {
-    fontSize: 14,
     color: '#ccc',
   },
 
@@ -503,8 +555,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   relatedCard: {
-    width: (width - 60) / 2,
-    height: 120,
     borderRadius: 8,
     marginBottom: 16,
     overflow: 'hidden',
@@ -517,21 +567,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
   },
-  relatedCardContent: {
-    padding: 12,
-  },
+  relatedCardContent: {},
   relatedCardTitle: {
-    fontSize: 14,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 4,
   },
   relatedCardLevel: {
-    fontSize: 12,
     color: '#AADD00',
   },
-  bottomSpacing: {
-    height: 100,
-  },
+  bottomSpacing: {},
 });
 
