@@ -161,13 +161,13 @@ export default function CourseDetailScreen() {
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Título e subtítulo */}
+          {/* Título e descrição */}
           <View style={[styles.titleSection, { paddingHorizontal: padding }]}>
             <Text style={[styles.title, { fontSize: isDesktop ? 32 : 28 }]}>
               {courseData.title}
             </Text>
             <Text style={[styles.subtitle, { fontSize: isDesktop ? 18 : 16 }]}>
-              {courseData.subtitle}
+              {courseData.description}
             </Text>
           </View>
 
@@ -344,10 +344,12 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     lineHeight: 1.2,
     marginBottom: 8,
+    backgroundColor: 'transparent',
   },
   subtitle: {
     color: '#666666',
     lineHeight: 1.4,
+    backgroundColor: 'transparent',
     fontWeight: '400',
   },
 
@@ -372,10 +374,12 @@ const styles = StyleSheet.create({
   metricValue: {
     fontWeight: '600',
     color: '#1A1A1A',
+    backgroundColor: 'transparent',
   },
   metricLabel: {
     color: '#666666',
     fontWeight: '400',
+    backgroundColor: 'transparent',
   },
 
   // Avaliação
@@ -394,10 +398,10 @@ const styles = StyleSheet.create({
   },
   star: {
     marginRight: 2,
-  },
-  ratingText: {
+  },  ratingText: {
     color: '#666666',
     fontWeight: '400',
+    backgroundColor: 'transparent',
   },
 
   // Tabs
@@ -419,10 +423,12 @@ const styles = StyleSheet.create({
   tabText: {
     color: '#666666',
     fontWeight: '500',
+    backgroundColor: 'transparent',
   },
   tabTextActive: {
     color: '#1A1A1A',
     fontWeight: '600',
+    backgroundColor: 'transparent',
   },
 
   // Conteúdo das tabs
@@ -440,10 +446,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1A1A1A',
     marginBottom: 16,
+    backgroundColor: 'transparent',
   },
   description: {
     color: '#333333',
     lineHeight: 1.6,
+    backgroundColor: 'transparent',
     fontWeight: '400',
   },
 
@@ -467,12 +475,14 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: 'bold',
+    backgroundColor: 'transparent',
   },
   checklistText: {
     flex: 1,
     color: '#333333',
     lineHeight: 1.5,
     fontWeight: '400',
+    backgroundColor: 'transparent',
   },
 
   // Módulos
@@ -488,12 +498,13 @@ const styles = StyleSheet.create({
     color: '#666666',
     marginRight: 12,
     minWidth: 20,
+    backgroundColor: 'transparent',
   },
   moduleTitle: {
     flex: 1,
     color: '#333333',
-    fontWeight: '400',
-    lineHeight: 1.4,
+    fontWeight: '500',
+    backgroundColor: 'transparent',
   },
 
   // Instrutor
@@ -513,16 +524,19 @@ const styles = StyleSheet.create({
   instructorInitials: {
     fontWeight: 'bold',
     color: '#FFFFFF',
+    backgroundColor: 'transparent',
   },
   instructorDetails: {},
   instructorName: {
     fontWeight: '600',
     color: '#1A1A1A',
     marginBottom: 4,
+    backgroundColor: 'transparent',
   },
   instructorTitle: {
     color: '#666666',
     fontWeight: '400',
+    backgroundColor: 'transparent',
   },
 
   // Botão de ação
@@ -539,6 +553,7 @@ const styles = StyleSheet.create({
   startButtonText: {
     color: '#1A1A1A',
     fontWeight: '700',
+    backgroundColor: 'transparent',
   },
   
   bottomSpacing: {},
