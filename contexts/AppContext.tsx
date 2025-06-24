@@ -3,10 +3,15 @@ import { AppState, User, Course, UserProgress } from '../data/types';
 import { initialAppState } from '../data';
 
 interface AppContextType extends AppState {
+  // Estado de autenticação
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  
   // Ações para atualizar o estado
   updateUserProgress: (courseId: string, progress: number) => void;
   markModuleComplete: (courseId: string, moduleId: string) => void;
   setCurrentUser: (user: User | null) => void;
+  logout: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -16,7 +21,11 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [state, setState] = useState<AppState>(initialAppState);
+  const [state, setState] = useState<AppState>({
+    ...initialAppState,
+    currentUser: null // Iniciar sem usuário logado
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
   const updateUserProgress = (courseId: string, progress: number) => {
     setState(prevState => ({
@@ -72,11 +81,21 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }));
   };
 
+  const logout = () => {
+    setState(prevState => ({
+      ...prevState,
+      currentUser: null
+    }));
+  };
+
   const contextValue: AppContextType = {
     ...state,
+    isAuthenticated: !!state.currentUser,
+    isLoading,
     updateUserProgress,
     markModuleComplete,
-    setCurrentUser
+    setCurrentUser,
+    logout
   };
 
   return (
