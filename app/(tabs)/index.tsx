@@ -15,6 +15,49 @@ import { useApp, useInProgressCourses, useRecommendedCourses } from '@/contexts/
 import { calculateOverallProgress } from '@/data/progress';
 import { useResponsive, getCardWidth, getColumnsForScreen, getResponsivePadding } from '@/hooks/useResponsive';
 
+// Função para obter imagens profissionais baseadas no curso
+const getImageForCourse = (courseId: string) => {
+  const professionalImages = {
+    // Imagens para liderança e gestão
+    leadership: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop',
+    management: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
+    
+    // Imagens para vendas e negociação
+    sales: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=400&h=300&fit=crop',
+    negotiation: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
+    
+    // Imagens para tecnologia e inovação
+    technology: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&h=300&fit=crop',
+    innovation: 'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=400&h=300&fit=crop',
+    
+    // Imagens para sustentabilidade
+    sustainability: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop',
+    environment: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&h=300&fit=crop',
+    
+    // Imagens para jurídico e compliance
+    legal: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400&h=300&fit=crop',
+    compliance: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=300&fit=crop',
+    
+    // Imagens para finanças e investimentos
+    finance: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=300&fit=crop',
+    investment: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=300&fit=crop',
+  };
+
+  // Mapear cursos para categorias de imagens
+  const courseImageMap: { [key: string]: string } = {
+    '1': professionalImages.technology,
+    '2': professionalImages.management,
+    '3': professionalImages.sustainability,
+    '4': professionalImages.sales,
+    '5': professionalImages.leadership,
+    '6': professionalImages.finance,
+    '7': professionalImages.legal,
+    '8': professionalImages.innovation,
+  };
+
+  return courseImageMap[courseId] || professionalImages.management;
+};
+
 // Componente de card de curso responsivo
 const ResponsiveNetflixCard = ({ course, progress, index }: { course: any; progress?: any; index: number }) => {
   const { width, isDesktop, isTablet, isMobile } = useResponsive();
@@ -44,7 +87,7 @@ const ResponsiveNetflixCard = ({ course, progress, index }: { course: any; progr
       onPress={handlePress}
     >
       <ImageBackground
-        source={{ uri: `https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400&h=300&fit=crop&crop=center` }}
+        source={{ uri: getImageForCourse(course.id) }}
         style={styles.cardBackground}
         resizeMode="cover"
       >
