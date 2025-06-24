@@ -11,6 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import { useApp } from '@/contexts/AppContext';
 import { useResponsive, getCardWidth, getColumnsForScreen, getResponsivePadding } from '@/hooks/useResponsive';
 
@@ -20,12 +21,13 @@ const ResponsiveLibraryCard = ({ item, type = 'course' }: { item: any; type?: 'c
   const padding = getResponsivePadding(width);
   const columns = getColumnsForScreen(width);
   const cardWidth = getCardWidth(width, columns, padding);
+  const router = useRouter();
   
   const getTypeIcon = () => {
     switch (type) {
-      case 'app': return '📱';
-      case 'journey': return '🗺️';
-      default: return '📚';
+      case 'app': return 'APP';
+      case 'journey': return 'TRILHA';
+      default: return 'CURSO';
     }
   };
 
@@ -40,8 +42,18 @@ const ResponsiveLibraryCard = ({ item, type = 'course' }: { item: any; type?: 'c
   // Altura do card baseada no tamanho da tela
   const cardHeight = isDesktop ? 220 : isTablet ? 200 : 180;
 
+  const handlePress = () => {
+    if (type === 'course') {
+      router.push(`/course/${item.id}`);
+    }
+    // Para apps e jornadas, pode implementar navegação específica no futuro
+  };
+
   return (
-    <TouchableOpacity style={[styles.libraryCard, { width: cardWidth, height: cardHeight }]}>
+    <TouchableOpacity 
+      style={[styles.libraryCard, { width: cardWidth, height: cardHeight }]}
+      onPress={handlePress}
+    >
       <ImageBackground
         source={{ uri: `https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=300&h=200&fit=crop` }}
         style={styles.cardBackground}
@@ -54,11 +66,11 @@ const ResponsiveLibraryCard = ({ item, type = 'course' }: { item: any; type?: 'c
           <View style={styles.cardHeader}>
             <View style={[styles.typeIndicator, { 
               backgroundColor: getTypeColor(),
-              width: isDesktop ? 36 : 32,
-              height: isDesktop ? 36 : 32,
-              borderRadius: isDesktop ? 18 : 16
+              width: isDesktop ? 60 : 50,
+              height: isDesktop ? 24 : 20,
+              borderRadius: isDesktop ? 12 : 10
             }]}>
-              <Text style={[styles.typeIcon, { fontSize: isDesktop ? 18 : 16 }]}>{getTypeIcon()}</Text>
+              <Text style={[styles.typeIcon, { fontSize: isDesktop ? 10 : 9 }]}>{getTypeIcon()}</Text>
             </View>
           </View>
           
@@ -394,7 +406,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  typeIcon: {},
+  typeIcon: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
   cardContent: {},
   cardTitle: {
     fontWeight: 'bold',

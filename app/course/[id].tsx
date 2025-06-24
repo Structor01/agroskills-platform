@@ -6,353 +6,288 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  ImageBackground,
   Platform,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useApp } from '@/contexts/AppContext';
-import { useResponsive, getCardWidth, getColumnsForScreen, getResponsivePadding } from '@/hooks/useResponsive';
+import { useResponsive, getResponsivePadding } from '@/hooks/useResponsive';
 
-// Componente de módulo/episódio responsivo
-const ResponsiveModuleItem = ({ module, index, isCompleted }: { module: any; index: number; isCompleted: boolean }) => {
-  const { isDesktop, isTablet } = useResponsive();
-
+// Componente de estrelas para avaliação
+const StarRating = ({ rating, reviews }: { rating: number; reviews: number }) => {
+  const { isDesktop } = useResponsive();
+  const stars = [];
+  
+  for (let i = 1; i <= 5; i++) {
+    stars.push(
+      <Text 
+        key={i} 
+        style={[styles.star, { 
+          color: i <= Math.floor(rating) ? '#4CAF50' : '#E0E0E0',
+          fontSize: isDesktop ? 18 : 16 
+        }]}
+      >
+        ★
+      </Text>
+    );
+  }
+  
   return (
-    <TouchableOpacity style={[styles.moduleItem, { 
-      paddingVertical: isDesktop ? 20 : 16,
-      paddingHorizontal: isDesktop ? 20 : 0
-    }]}>
-      <View style={[styles.moduleNumber, {
-        width: isDesktop ? 48 : 40,
-        height: isDesktop ? 48 : 40,
-        borderRadius: isDesktop ? 24 : 20,
-        marginRight: isDesktop ? 20 : 16
-      }]}>
-        <Text style={[styles.moduleNumberText, { fontSize: isDesktop ? 18 : 16 }]}>
-          {index + 1}
-        </Text>
+    <View style={styles.ratingContainer}>
+      <View style={styles.starsContainer}>
+        {stars}
       </View>
-      
-      <View style={styles.moduleContent}>
-        <Text style={[styles.moduleTitle, { fontSize: isDesktop ? 18 : 16 }]}>
-          {module.title}
-        </Text>
-        <Text style={[styles.moduleDescription, { fontSize: isDesktop ? 16 : 14 }]} numberOfLines={2}>
-          {module.description}
-        </Text>
-        <Text style={[styles.moduleDuration, { fontSize: isDesktop ? 14 : 12 }]}>
-          {module.duration}
-        </Text>
-      </View>
-      
-      <View style={[styles.moduleStatus, { width: isDesktop ? 48 : 40 }]}>
-        {isCompleted ? (
-          <Text style={[styles.completedIcon, { fontSize: isDesktop ? 24 : 20 }]}>✓</Text>
-        ) : (
-          <Text style={[styles.playIcon, { fontSize: isDesktop ? 20 : 16 }]}>▶</Text>
-        )}
-      </View>
-    </TouchableOpacity>
+      <Text style={[styles.ratingText, { fontSize: isDesktop ? 16 : 14 }]}>
+        {rating} ({reviews} avaliações)
+      </Text>
+    </View>
   );
 };
 
-// Componente de curso relacionado responsivo
-const ResponsiveRelatedCourseCard = ({ course }: { course: any }) => {
-  const { width, isDesktop } = useResponsive();
-  const padding = getResponsivePadding(width);
-  const columns = getColumnsForScreen(width);
-  const cardWidth = getCardWidth(width, columns, padding);
-  const cardHeight = isDesktop ? 140 : 120;
-
+// Componente de métrica
+const MetricItem = ({ icon, value, label }: { icon: string; value: string; label: string }) => {
+  const { isDesktop } = useResponsive();
+  
   return (
-    <TouchableOpacity style={[styles.relatedCard, { width: cardWidth, height: cardHeight }]}>
-      <ImageBackground
-        source={{ uri: `https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=300&h=200&fit=crop` }}
-        style={styles.relatedCardBackground}
-        resizeMode="cover"
-      >
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.8)']}
-          style={styles.relatedCardGradient}
-        >
-          <View style={[styles.relatedCardContent, { padding: isDesktop ? 16 : 12 }]}>
-            <Text style={[styles.relatedCardTitle, { fontSize: isDesktop ? 16 : 14 }]} numberOfLines={2}>
-              {course.title}
-            </Text>
-            <Text style={[styles.relatedCardLevel, { fontSize: isDesktop ? 13 : 12 }]}>
-              {course.level}
-            </Text>
-          </View>
-        </LinearGradient>
-      </ImageBackground>
-    </TouchableOpacity>
+    <View style={styles.metricItem}>
+      {icon && (
+        <Text style={[styles.metricIcon, { fontSize: isDesktop ? 18 : 16 }]}>{icon}</Text>
+      )}
+      <View style={styles.metricContent}>
+        <Text style={[styles.metricValue, { fontSize: isDesktop ? 16 : 14 }]}>{value}</Text>
+        {label && (
+          <Text style={[styles.metricLabel, { fontSize: isDesktop ? 14 : 12 }]}>{label}</Text>
+        )}
+      </View>
+    </View>
+  );
+};
+
+// Componente de item com checkmark
+const ChecklistItem = ({ text }: { text: string }) => {
+  const { isDesktop } = useResponsive();
+  
+  return (
+    <View style={styles.checklistItem}>
+      <View style={styles.checkmark}>
+        <Text style={styles.checkmarkIcon}>✓</Text>
+      </View>
+      <Text style={[styles.checklistText, { fontSize: isDesktop ? 16 : 14 }]}>
+        {text}
+      </Text>
+    </View>
+  );
+};
+
+// Componente de módulo do curso
+const ModuleItem = ({ number, title }: { number: number; title: string }) => {
+  const { isDesktop } = useResponsive();
+  
+  return (
+    <View style={styles.moduleItem}>
+      <Text style={[styles.moduleNumber, { fontSize: isDesktop ? 16 : 14 }]}>
+        {number}.
+      </Text>
+      <Text style={[styles.moduleTitle, { fontSize: isDesktop ? 16 : 14 }]}>
+        {title}
+      </Text>
+    </View>
   );
 };
 
 export default function CourseDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const { courses, currentUser } = useApp();
-  const [selectedTab, setSelectedTab] = useState('episodes');
-  const { width, height, isDesktop, isTablet, isMobile } = useResponsive();
+  const { courses } = useApp();
+  const [selectedTab, setSelectedTab] = useState('sobre');
+  const { width, isDesktop, isTablet } = useResponsive();
   const padding = getResponsivePadding(width);
 
-  // Encontrar o curso pelo ID (simulado)
+  // Encontrar o curso pelo ID
   const course = courses.find(c => c.id === id) || courses[0];
   
-  // Dados mockados para demonstração
-  const courseModules = [
-    {
-      id: '1',
-      title: 'Introdução às Tecnologias Emergentes',
-      description: 'Visão geral das principais tecnologias que estão transformando o agronegócio',
-      duration: '15 min'
-    },
-    {
-      id: '2',
-      title: 'IoT na Agricultura',
-      description: 'Como a Internet das Coisas está revolucionando o monitoramento de culturas',
-      duration: '22 min'
-    },
-    {
-      id: '3',
-      title: 'Inteligência Artificial no Campo',
-      description: 'Aplicações práticas de IA para otimização de processos agrícolas',
-      duration: '28 min'
-    },
-    {
-      id: '4',
-      title: 'Drones e Agricultura de Precisão',
-      description: 'Uso de drones para mapeamento e monitoramento de propriedades rurais',
-      duration: '25 min'
+  // Dados do curso baseados no mockup
+  const courseData = {
+    category: 'Intermediário',
+    title: 'Tecnologias Emergentes no Agro',
+    subtitle: 'Domine as tecnologias que estão transformando o agronegócio',
+    duration: '3h 20min',
+    students: '2.8k alunos',
+    level: 'Intermediário',
+    rating: 4.8,
+    reviews: 342,
+    benefits: [
+      'Deseja se manter atualizado sobre as últimas tecnologias do agro',
+      'Busca implementar soluções inovadoras em sua operação',
+      'Quer se destacar no mercado com conhecimentos avançados',
+      'Precisa tomar decisões baseadas em dados e tecnologia'
+    ],
+    description: 'Este curso abrange as principais tecnologias emergentes que estão transformando o agronegócio, desde IoT e sensores até inteligência artificial e blockchain aplicados à cadeia produtiva.',
+    modules: [
+      'Introdução às Tecnologias no Agro',
+      'Internet das Coisas (IoT) e Sensores',
+      'Inteligência Artificial no Campo',
+      'Blockchain e Rastreabilidade',
+      'Implementação e Casos de Sucesso'
+    ],
+    instructor: {
+      name: 'Dr. Ricardo Oliveira',
+      title: 'Especialista em Tecnologia Agrícola'
     }
+  };
+
+  const tabs = [
+    { id: 'sobre', label: 'Sobre' },
+    { id: 'conteudo', label: 'Conteúdo' },
+    { id: 'avaliacoes', label: 'Avaliações' }
   ];
-
-  const relatedCourses = courses.filter(c => c.id !== course.id).slice(0, isDesktop ? 4 : 3);
-  const completedModules = ['1', '2']; // Simulado
-
-  // Altura do hero baseada no tamanho da tela
-  const heroHeight = isDesktop ? height * 0.7 : isTablet ? height * 0.6 : height * 0.5;
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Hero Section Responsivo */}
-        <View style={[styles.heroSection, { height: heroHeight }]}>
-          <ImageBackground
-            source={{ uri: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800&h=500&fit=crop' }}
-            style={styles.heroBackground}
-            resizeMode="cover"
+      <SafeAreaView style={styles.safeArea}>
+        {/* Header minimalista */}
+        <View style={[styles.header, { paddingHorizontal: padding }]}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
           >
-            <LinearGradient
-              colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.8)']}
-              style={styles.heroGradient}
-            >
-              {/* Header */}
-              <SafeAreaView style={[styles.headerContainer, { paddingHorizontal: padding }]}>
-                <TouchableOpacity 
-                  style={[styles.backButton, {
-                    width: isDesktop ? 48 : 40,
-                    height: isDesktop ? 48 : 40,
-                    borderRadius: isDesktop ? 24 : 20
-                  }]}
-                  onPress={() => router.back()}
-                >
-                  <Text style={[styles.backButtonText, { fontSize: isDesktop ? 24 : 20 }]}>←</Text>
-                </TouchableOpacity>
-              </SafeAreaView>
-
-              {/* Hero Content */}
-              <View style={[styles.heroContent, { 
-                paddingHorizontal: padding,
-                maxWidth: isDesktop ? '60%' : '90%'
-              }]}>
-                <Text style={[styles.courseCategory, { fontSize: isDesktop ? 16 : 14 }]}>
-                  {course.category}
-                </Text>
-                <Text style={[styles.courseTitle, { 
-                  fontSize: isDesktop ? 36 : isTablet ? 32 : 28,
-                  lineHeight: isDesktop ? 42 : isTablet ? 38 : 32
-                }]}>
-                  {course.title}
-                </Text>
-                <Text style={[styles.courseDescription, { 
-                  fontSize: isDesktop ? 18 : 16,
-                  lineHeight: isDesktop ? 26 : 22
-                }]}>
-                  {course.description}
-                </Text>
-                
-                <View style={[styles.courseMetadata, { 
-                  flexDirection: isDesktop ? 'row' : 'column',
-                  alignItems: isDesktop ? 'center' : 'flex-start',
-                  gap: isDesktop ? 24 : 8
-                }]}>
-                  <Text style={[styles.metadataItem, { fontSize: isDesktop ? 16 : 14 }]}>
-                    ⭐ {course.level}
-                  </Text>
-                  <Text style={[styles.metadataItem, { fontSize: isDesktop ? 16 : 14 }]}>
-                    🕒 {course.duration}
-                  </Text>
-                  <Text style={[styles.metadataItem, { fontSize: isDesktop ? 16 : 14 }]}>
-                    📚 {courseModules.length} módulos
-                  </Text>
-                </View>
-
-                <View style={[styles.heroActions, { 
-                  flexDirection: isDesktop ? 'row' : 'column',
-                  gap: isDesktop ? 16 : 12,
-                  maxWidth: isDesktop ? 400 : '100%'
-                }]}>
-                  <TouchableOpacity style={[styles.playButton, { 
-                    paddingHorizontal: isDesktop ? 40 : 32,
-                    paddingVertical: isDesktop ? 16 : 12,
-                    flex: isDesktop ? 1 : 0
-                  }]}>
-                    <Text style={[styles.playButtonText, { fontSize: isDesktop ? 18 : 16 }]}>
-                      ▶ Começar curso
-                    </Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity style={[styles.addButton, { 
-                    paddingHorizontal: isDesktop ? 32 : 24,
-                    paddingVertical: isDesktop ? 16 : 12,
-                    flex: isDesktop ? 0 : 0
-                  }]}>
-                    <Text style={[styles.addButtonText, { fontSize: isDesktop ? 18 : 16 }]}>
-                      + Minha lista
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </LinearGradient>
-          </ImageBackground>
+            <Text style={[styles.backIcon, { fontSize: isDesktop ? 24 : 20 }]}>←</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.categoryBadge}>
+            <Text style={[styles.categoryText, { fontSize: isDesktop ? 14 : 12 }]}>
+              {courseData.category}
+            </Text>
+          </View>
         </View>
 
-        {/* Tabs Responsivos */}
-        <View style={[styles.tabsContainer, { paddingHorizontal: padding }]}>
-          {['episodes', 'details', 'related'].map((tab) => {
-            const tabLabels = { episodes: 'Módulos', details: 'Detalhes', related: 'Relacionados' };
-            return (
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {/* Título e subtítulo */}
+          <View style={[styles.titleSection, { paddingHorizontal: padding }]}>
+            <Text style={[styles.title, { fontSize: isDesktop ? 32 : 28 }]}>
+              {courseData.title}
+            </Text>
+            <Text style={[styles.subtitle, { fontSize: isDesktop ? 18 : 16 }]}>
+              {courseData.subtitle}
+            </Text>
+          </View>
+
+          {/* Métricas */}
+          <View style={[styles.metricsSection, { paddingHorizontal: padding }]}>
+            <MetricItem icon="" value="3h" label="20min" />
+            <MetricItem icon="" value="2.8k" label="alunos" />
+            <MetricItem icon="" value="Intermediário" label="" />
+          </View>
+
+          {/* Avaliação */}
+          <View style={[styles.ratingSection, { paddingHorizontal: padding }]}>
+            <StarRating rating={courseData.rating} reviews={courseData.reviews} />
+          </View>
+
+          {/* Tabs */}
+          <View style={[styles.tabsContainer, { paddingHorizontal: padding }]}>
+            {tabs.map((tab) => (
               <TouchableOpacity
-                key={tab}
+                key={tab.id}
                 style={[
                   styles.tab,
-                  selectedTab === tab && styles.tabActive,
-                  { 
-                    paddingHorizontal: isDesktop ? 20 : 16,
-                    paddingVertical: isDesktop ? 12 : 8,
-                    marginRight: isDesktop ? 20 : 16
-                  }
+                  selectedTab === tab.id && styles.tabActive
                 ]}
-                onPress={() => setSelectedTab(tab)}
+                onPress={() => setSelectedTab(tab.id)}
               >
                 <Text style={[
                   styles.tabText,
-                  selectedTab === tab && styles.tabTextActive,
-                  { fontSize: isDesktop ? 18 : 16 }
+                  selectedTab === tab.id && styles.tabTextActive,
+                  { fontSize: isDesktop ? 16 : 14 }
                 ]}>
-                  {tabLabels[tab as keyof typeof tabLabels]}
+                  {tab.label}
                 </Text>
               </TouchableOpacity>
-            );
-          })}
-        </View>
+            ))}
+          </View>
 
-        {/* Tab Content */}
-        <View style={[styles.tabContent, { paddingHorizontal: padding }]}>
-          {selectedTab === 'episodes' && (
-            <View style={styles.episodesTab}>
-              <Text style={[styles.sectionTitle, { fontSize: isDesktop ? 24 : 20 }]}>
-                Módulos do curso
-              </Text>
-              {courseModules.map((module, index) => (
-                <ResponsiveModuleItem
-                  key={module.id}
-                  module={module}
-                  index={index}
-                  isCompleted={completedModules.includes(module.id)}
-                />
-              ))}
-            </View>
-          )}
-
-          {selectedTab === 'details' && (
-            <View style={styles.detailsTab}>
-              <Text style={[styles.sectionTitle, { fontSize: isDesktop ? 24 : 20 }]}>
-                Sobre este curso
-              </Text>
-              <Text style={[styles.detailsText, { 
-                fontSize: isDesktop ? 18 : 16,
-                lineHeight: isDesktop ? 28 : 24
-              }]}>
-                Este curso abrangente explora as tecnologias emergentes que estão transformando 
-                o setor agrícola. Você aprenderá sobre IoT, inteligência artificial, drones e 
-                outras inovações que estão revolucionando a agricultura moderna.
-              </Text>
-              
-              <Text style={[styles.subsectionTitle, { fontSize: isDesktop ? 20 : 18 }]}>
-                O que você vai aprender
-              </Text>
-              <View style={styles.learningPoints}>
-                {[
-                  'Fundamentos das tecnologias emergentes no agro',
-                  'Implementação prática de IoT na agricultura',
-                  'Aplicações de IA para otimização de processos',
-                  'Uso de drones para agricultura de precisão'
-                ].map((point, index) => (
-                  <Text key={index} style={[styles.learningPoint, { 
-                    fontSize: isDesktop ? 16 : 14,
-                    lineHeight: isDesktop ? 24 : 20
-                  }]}>
-                    • {point}
+          {/* Conteúdo das tabs */}
+          <View style={[styles.tabContent, { paddingHorizontal: padding }]}>
+            {selectedTab === 'sobre' && (
+              <View style={styles.aboutTab}>
+                {/* Este produto é para você se... */}
+                <View style={styles.section}>
+                  <Text style={[styles.sectionTitle, { fontSize: isDesktop ? 20 : 18 }]}>
+                    Este produto é para você se...
                   </Text>
-                ))}
-              </View>
+                  {courseData.benefits.map((benefit, index) => (
+                    <ChecklistItem key={index} text={benefit} />
+                  ))}
+                </View>
 
-              <Text style={[styles.subsectionTitle, { fontSize: isDesktop ? 20 : 18 }]}>
-                Instrutor
-              </Text>
-              <View style={styles.instructorInfo}>
-                <View style={[styles.instructorAvatar, {
-                  width: isDesktop ? 60 : 50,
-                  height: isDesktop ? 60 : 50,
-                  borderRadius: isDesktop ? 30 : 25,
-                  marginRight: isDesktop ? 20 : 16
-                }]}>
-                  <Text style={[styles.instructorInitials, { fontSize: isDesktop ? 20 : 18 }]}>
-                    DR
+                {/* O que você vai aprender */}
+                <View style={styles.section}>
+                  <Text style={[styles.sectionTitle, { fontSize: isDesktop ? 20 : 18 }]}>
+                    O que você vai aprender
+                  </Text>
+                  <Text style={[styles.description, { fontSize: isDesktop ? 16 : 14 }]}>
+                    {courseData.description}
                   </Text>
                 </View>
-                <View style={styles.instructorDetails}>
-                  <Text style={[styles.instructorName, { fontSize: isDesktop ? 18 : 16 }]}>
-                    Dr. Roberto Silva
+
+                {/* Instrutor */}
+                <View style={styles.section}>
+                  <Text style={[styles.sectionTitle, { fontSize: isDesktop ? 20 : 18 }]}>
+                    Instrutor
                   </Text>
-                  <Text style={[styles.instructorTitle, { fontSize: isDesktop ? 16 : 14 }]}>
-                    Especialista em Tecnologia Agrícola
-                  </Text>
+                  <View style={styles.instructorInfo}>
+                    <View style={styles.instructorAvatar}>
+                      <Text style={[styles.instructorInitials, { fontSize: isDesktop ? 20 : 18 }]}>
+                        DR
+                      </Text>
+                    </View>
+                    <View style={styles.instructorDetails}>
+                      <Text style={[styles.instructorName, { fontSize: isDesktop ? 18 : 16 }]}>
+                        {courseData.instructor.name}
+                      </Text>
+                      <Text style={[styles.instructorTitle, { fontSize: isDesktop ? 14 : 12 }]}>
+                        {courseData.instructor.title}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
               </View>
-            </View>
-          )}
+            )}
 
-          {selectedTab === 'related' && (
-            <View style={styles.relatedTab}>
-              <Text style={[styles.sectionTitle, { fontSize: isDesktop ? 24 : 20 }]}>
-                Cursos relacionados
-              </Text>
-              <View style={[styles.relatedGrid, { gap: isDesktop ? 16 : 12 }]}>
-                {relatedCourses.map((relatedCourse) => (
-                  <ResponsiveRelatedCourseCard key={relatedCourse.id} course={relatedCourse} />
+            {selectedTab === 'conteudo' && (
+              <View style={styles.contentTab}>
+                <Text style={[styles.sectionTitle, { fontSize: isDesktop ? 20 : 18 }]}>
+                  Módulos do curso
+                </Text>
+                {courseData.modules.map((module, index) => (
+                  <ModuleItem key={index} number={index + 1} title={module} />
                 ))}
               </View>
-            </View>
-          )}
-        </View>
+            )}
 
-        <View style={[styles.bottomSpacing, { height: isDesktop ? 120 : 100 }]} />
-      </ScrollView>
+            {selectedTab === 'avaliacoes' && (
+              <View style={styles.reviewsTab}>
+                <Text style={[styles.sectionTitle, { fontSize: isDesktop ? 20 : 18 }]}>
+                  Avaliações dos alunos
+                </Text>
+                <Text style={[styles.description, { fontSize: isDesktop ? 16 : 14 }]}>
+                  Em breve você poderá ver as avaliações detalhadas dos alunos que já fizeram este curso.
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Botão de ação */}
+          <View style={[styles.actionSection, { paddingHorizontal: padding }]}>
+            <TouchableOpacity style={styles.startButton}>
+              <Text style={[styles.startButtonText, { fontSize: isDesktop ? 18 : 16 }]}>
+                Começar Agora
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={[styles.bottomSpacing, { height: isDesktop ? 120 : 100 }]} />
+        </ScrollView>
+      </SafeAreaView>
     </View>
   );
 }
@@ -360,77 +295,109 @@ export default function CourseDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#141414',
+    backgroundColor: '#FFFFFF',
   },
-  scrollView: {
+  safeArea: {
     flex: 1,
   },
   
-  // Hero Section
-  heroSection: {},
-  heroBackground: {
-    flex: 1,
-  },
-  heroGradient: {
-    flex: 1,
+  // Header
+  header: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  headerContainer: {
-    paddingTop: Platform.OS === 'web' ? 20 : 10,
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingTop: Platform.OS === 'web' ? 20 : 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
   backButton: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  backButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  backIcon: {
+    color: '#333333',
+    fontWeight: '300',
   },
-  heroContent: {
-    paddingBottom: 40,
+  categoryBadge: {
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
-  courseCategory: {
-    color: '#AADD00',
-    fontWeight: 'bold',
-    letterSpacing: 1,
+  categoryText: {
+    color: '#666666',
+    fontWeight: '500',
+  },
+
+  // Conteúdo
+  content: {
+    flex: 1,
+  },
+  titleSection: {
+    paddingVertical: 24,
+  },
+  title: {
+    fontWeight: '700',
+    color: '#1A1A1A',
+    lineHeight: 1.2,
     marginBottom: 8,
   },
-  courseTitle: {
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 12,
+  subtitle: {
+    color: '#666666',
+    lineHeight: 1.4,
+    fontWeight: '400',
   },
-  courseDescription: {
-    color: '#ccc',
-    marginBottom: 16,
+
+  // Métricas
+  metricsSection: {
+    flexDirection: 'row',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
-  courseMetadata: {
-    marginBottom: 24,
-  },
-  metadataItem: {
-    color: '#ccc',
-  },
-  heroActions: {},
-  playButton: {
-    backgroundColor: '#fff',
-    borderRadius: 6,
+  metricItem: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    marginRight: 24,
   },
-  playButtonText: {
-    color: '#000',
-    fontWeight: 'bold',
+  metricIcon: {
+    marginRight: 8,
   },
-  addButton: {
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
+  metricContent: {
+    alignItems: 'flex-start',
   },
-  addButtonText: {
-    color: '#fff',
+  metricValue: {
     fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  metricLabel: {
+    color: '#666666',
+    fontWeight: '400',
+  },
+
+  // Avaliação
+  ratingSection: {
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    marginRight: 8,
+  },
+  star: {
+    marginRight: 2,
+  },
+  ratingText: {
+    color: '#666666',
+    fontWeight: '400',
   },
 
   // Tabs
@@ -438,144 +405,142 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: '#F0F0F0',
   },
-  tab: {},
+  tab: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginRight: 24,
+  },
   tabActive: {
     borderBottomWidth: 2,
     borderBottomColor: '#AADD00',
   },
   tabText: {
-    color: '#ccc',
+    color: '#666666',
     fontWeight: '500',
   },
   tabTextActive: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: '#1A1A1A',
+    fontWeight: '600',
   },
 
-  // Tab Content
+  // Conteúdo das tabs
   tabContent: {
-    paddingTop: 20,
+    paddingTop: 24,
+  },
+  aboutTab: {},
+  contentTab: {},
+  reviewsTab: {},
+  
+  section: {
+    marginBottom: 32,
   },
   sectionTitle: {
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: '700',
+    color: '#1A1A1A',
     marginBottom: 16,
   },
+  description: {
+    color: '#333333',
+    lineHeight: 1.6,
+    fontWeight: '400',
+  },
 
-  // Episodes Tab
-  episodesTab: {},
-  moduleItem: {
+  // Checklist
+  checklistItem: {
     flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-  },
-  moduleNumber: {
-    backgroundColor: '#333',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  moduleNumberText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  moduleContent: {
-    flex: 1,
-  },
-  moduleTitle: {
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  moduleDescription: {
-    color: '#ccc',
-    marginBottom: 4,
-  },
-  moduleDuration: {
-    color: '#AADD00',
-  },
-  moduleStatus: {
-    alignItems: 'center',
-  },
-  completedIcon: {
-    color: '#AADD00',
-  },
-  playIcon: {
-    color: '#ccc',
-  },
-
-  // Details Tab
-  detailsTab: {},
-  detailsText: {
-    color: '#ccc',
-    marginBottom: 24,
-  },
-  subsectionTitle: {
-    fontWeight: 'bold',
-    color: '#fff',
+    alignItems: 'flex-start',
     marginBottom: 12,
   },
-  learningPoints: {
-    marginBottom: 24,
+  checkmark: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    marginTop: 2,
   },
-  learningPoint: {
-    color: '#ccc',
-    marginBottom: 8,
+  checkmarkIcon: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
+  checklistText: {
+    flex: 1,
+    color: '#333333',
+    lineHeight: 1.5,
+    fontWeight: '400',
+  },
+
+  // Módulos
+  moduleItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F8F8F8',
+  },
+  moduleNumber: {
+    fontWeight: '600',
+    color: '#666666',
+    marginRight: 12,
+    minWidth: 20,
+  },
+  moduleTitle: {
+    flex: 1,
+    color: '#333333',
+    fontWeight: '400',
+    lineHeight: 1.4,
+  },
+
+  // Instrutor
   instructorInfo: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   instructorAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: '#AADD00',
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 16,
   },
   instructorInitials: {
     fontWeight: 'bold',
-    color: '#000',
+    color: '#FFFFFF',
   },
   instructorDetails: {},
   instructorName: {
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: '600',
+    color: '#1A1A1A',
     marginBottom: 4,
   },
   instructorTitle: {
-    color: '#ccc',
+    color: '#666666',
+    fontWeight: '400',
   },
 
-  // Related Tab
-  relatedTab: {},
-  relatedGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+  // Botão de ação
+  actionSection: {
+    paddingVertical: 32,
   },
-  relatedCard: {
+  startButton: {
+    backgroundColor: '#AADD00',
+    paddingVertical: 16,
     borderRadius: 8,
-    marginBottom: 16,
-    overflow: 'hidden',
-    backgroundColor: '#222',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  relatedCardBackground: {
-    flex: 1,
+  startButtonText: {
+    color: '#1A1A1A',
+    fontWeight: '700',
   },
-  relatedCardGradient: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  relatedCardContent: {},
-  relatedCardTitle: {
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  relatedCardLevel: {
-    color: '#AADD00',
-  },
+  
   bottomSpacing: {},
 });
 

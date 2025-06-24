@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import { useApp, useInProgressCourses, useRecommendedCourses } from '@/contexts/AppContext';
 import { calculateOverallProgress } from '@/data/progress';
 import { useResponsive, getCardWidth, getColumnsForScreen, getResponsivePadding } from '@/hooks/useResponsive';
@@ -18,6 +19,7 @@ import { useResponsive, getCardWidth, getColumnsForScreen, getResponsivePadding 
 const ResponsiveNetflixCard = ({ course, progress, index }: { course: any; progress?: any; index: number }) => {
   const { width, isDesktop, isTablet, isMobile } = useResponsive();
   const padding = getResponsivePadding(width);
+  const router = useRouter();
   
   // Calcular largura do card baseado no tamanho da tela
   const getCardDimensions = () => {
@@ -32,8 +34,15 @@ const ResponsiveNetflixCard = ({ course, progress, index }: { course: any; progr
 
   const cardDimensions = getCardDimensions();
 
+  const handlePress = () => {
+    router.push(`/course/${course.id}`);
+  };
+
   return (
-    <TouchableOpacity style={[styles.netflixCard, cardDimensions, { marginRight: isDesktop ? 16 : 12 }]}>
+    <TouchableOpacity 
+      style={[styles.netflixCard, cardDimensions, { marginRight: isDesktop ? 16 : 12 }]}
+      onPress={handlePress}
+    >
       <ImageBackground
         source={{ uri: `https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400&h=300&fit=crop&crop=center` }}
         style={styles.cardBackground}
