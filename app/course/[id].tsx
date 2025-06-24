@@ -85,7 +85,7 @@ const ModuleItem = ({ number, title }: { number: number; title: string }) => {
   return (
     <View style={styles.moduleItem}>
       <Text style={[styles.moduleNumber, { fontSize: isDesktop ? 16 : 14 }]}>
-        {number}.
+        {number}
       </Text>
       <Text style={[styles.moduleTitle, { fontSize: isDesktop ? 16 : 14 }]}>
         {title}
