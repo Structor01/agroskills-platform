@@ -56,6 +56,69 @@ const mockModules: Module[] = [
 
 export const mockCourses: Course[] = [
   {
+    id: '0',
+    title: 'Carreira de Sucesso no Agronegócio',
+    description: 'O programa completo para vendedores, diretores e advogados que querem construir uma carreira sólida e lucrativa no setor do agronegócio. Aprenda as estratégias, networking e competências essenciais para se destacar neste mercado de trilhões.',
+    instructor: 'Dr. Roberto Silva',
+    duration: '8h 30min',
+    level: 'Intermediário',
+    rating: 4.9,
+    studentsCount: 2847,
+    category: 'Carreira',
+    tags: ['carreira', 'agronegócio', 'liderança', 'vendas', 'networking'],
+    thumbnail: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=450&fit=crop',
+    modules: [
+      {
+        id: '0-1',
+        title: 'Panorama do Agronegócio Brasileiro',
+        description: 'Entenda o mercado, oportunidades e principais players',
+        duration: '1h 15min',
+        completed: false,
+        order: 1
+      },
+      {
+        id: '0-2',
+        title: 'Competências do Profissional de Sucesso',
+        description: 'Habilidades técnicas e comportamentais essenciais',
+        duration: '1h 30min',
+        completed: false,
+        order: 2
+      },
+      {
+        id: '0-3',
+        title: 'Estratégias de Networking no Agro',
+        description: 'Como construir relacionamentos que geram oportunidades',
+        duration: '1h 20min',
+        completed: false,
+        order: 3
+      },
+      {
+        id: '0-4',
+        title: 'Vendas Consultivas no Agronegócio',
+        description: 'Técnicas avançadas para vendedores do setor',
+        duration: '2h 10min',
+        completed: false,
+        order: 4
+      },
+      {
+        id: '0-5',
+        title: 'Liderança e Gestão de Equipes',
+        description: 'Para diretores e gestores do agronegócio',
+        duration: '1h 45min',
+        completed: false,
+        order: 5
+      },
+      {
+        id: '0-6',
+        title: 'Aspectos Jurídicos e Compliance',
+        description: 'Conhecimentos essenciais para advogados do setor',
+        duration: '30min',
+        completed: false,
+        order: 6
+      }
+    ]
+  },
+  {
     id: '1',
     title: 'Tecnologias Emergentes no Agro',
     description: 'Domine as tecnologias que estão transformando o agronegócio',

@@ -9,6 +9,7 @@ import {
   ImageBackground,
   TextInput,
   Platform,
+  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -58,13 +59,41 @@ const getImageForCourse = (courseId: string, type: string = 'course') => {
   return courseImageMap[courseId] || professionalImages.management;
 };
 
-// Componente de card responsivo para biblioteca
-const ResponsiveLibraryCard = ({ item, type = 'course' }: { item: any; type?: 'course' | 'app' | 'journey' }) => {
+// Componente de card responsivo para biblioteca com animações
+const ResponsiveLibraryCard = ({ item, type = 'course', index = 0 }: { item: any; type?: 'course' | 'app' | 'journey'; index?: number }) => {
   const { width, isDesktop, isTablet } = useResponsive();
   const padding = getResponsivePadding(width);
   const columns = getColumnsForScreen(width);
   const cardWidth = getCardWidth(width, columns, padding);
   const router = useRouter();
+  
+  // Animações
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+  const opacityAnim = React.useRef(new Animated.Value(0)).current;
+  
+  React.useEffect(() => {
+    // Animação de entrada com delay baseado no index
+    Animated.timing(opacityAnim, {
+      toValue: 1,
+      duration: 500,
+      delay: index * 100,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
   
   const getTypeIcon = () => {
     switch (type) {
@@ -93,10 +122,17 @@ const ResponsiveLibraryCard = ({ item, type = 'course' }: { item: any; type?: 'c
   };
 
   return (
-    <TouchableOpacity 
-      style={[styles.libraryCard, { width: cardWidth, height: cardHeight }]}
-      onPress={handlePress}
-    >
+    <Animated.View style={{ 
+      opacity: opacityAnim,
+      transform: [{ scale: scaleAnim }]
+    }}>
+      <TouchableOpacity 
+        style={[styles.libraryCard, { width: cardWidth, height: cardHeight }]}
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={0.9}
+      >
       <ImageBackground
         source={{ uri: getImageForCourse(item.id, type) }}
         style={styles.cardBackground}
@@ -131,6 +167,7 @@ const ResponsiveLibraryCard = ({ item, type = 'course' }: { item: any; type?: 'c
         </LinearGradient>
       </ImageBackground>
     </TouchableOpacity>
+    </Animated.View>
   );
 };
 
@@ -196,7 +233,7 @@ const ResponsiveContentSection = ({ title, data, type }: { title: string; data: 
         gap: isDesktop ? 16 : 12
       }]}>
         {data.map((item, index) => (
-          <ResponsiveLibraryCard key={item.id || index} item={item} type={type} />
+          <ResponsiveLibraryCard key={item.id || index} item={item} type={type} index={index} />
         ))}
       </View>
     </View>

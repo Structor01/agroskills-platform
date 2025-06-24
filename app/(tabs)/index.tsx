@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   ImageBackground,
   Platform,
+  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -45,6 +46,7 @@ const getImageForCourse = (courseId: string) => {
 
   // Mapear cursos para categorias de imagens
   const courseImageMap: { [key: string]: string } = {
+    '0': professionalImages.leadership, // Carreira de Sucesso no Agronegócio
     '1': professionalImages.technology,
     '2': professionalImages.management,
     '3': professionalImages.sustainability,
@@ -58,11 +60,39 @@ const getImageForCourse = (courseId: string) => {
   return courseImageMap[courseId] || professionalImages.management;
 };
 
-// Componente de card de curso responsivo
+// Componente de card de curso responsivo com animações
 const ResponsiveNetflixCard = ({ course, progress, index }: { course: any; progress?: any; index: number }) => {
   const { width, isDesktop, isTablet, isMobile } = useResponsive();
   const padding = getResponsivePadding(width);
   const router = useRouter();
+  
+  // Animações
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+  const opacityAnim = React.useRef(new Animated.Value(0)).current;
+  
+  React.useEffect(() => {
+    // Animação de entrada com delay baseado no index
+    Animated.timing(opacityAnim, {
+      toValue: 1,
+      duration: 600,
+      delay: index * 150,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
   
   // Calcular largura do card baseado no tamanho da tela
   const getCardDimensions = () => {
@@ -82,10 +112,17 @@ const ResponsiveNetflixCard = ({ course, progress, index }: { course: any; progr
   };
 
   return (
-    <TouchableOpacity 
-      style={[styles.netflixCard, cardDimensions, { marginRight: isDesktop ? 16 : 12 }]}
-      onPress={handlePress}
-    >
+    <Animated.View style={{ 
+      opacity: opacityAnim,
+      transform: [{ scale: scaleAnim }]
+    }}>
+      <TouchableOpacity 
+        style={[styles.netflixCard, cardDimensions, { marginRight: isDesktop ? 16 : 12 }]}
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={0.9}
+      >
       <ImageBackground
         source={{ uri: getImageForCourse(course.id) }}
         style={styles.cardBackground}
@@ -119,6 +156,7 @@ const ResponsiveNetflixCard = ({ course, progress, index }: { course: any; progr
         </LinearGradient>
       </ImageBackground>
     </TouchableOpacity>
+    </Animated.View>
   );
 };
 
@@ -159,10 +197,30 @@ const ResponsiveCarousel = ({ title, data, showProgress = false }: {
   );
 };
 
-// Componente de hero banner responsivo
+// Componente de hero banner responsivo com animações
 const ResponsiveHeroBanner = ({ course }: { course: any }) => {
   const { width, height, isDesktop, isTablet, isMobile } = useResponsive();
   const padding = getResponsivePadding(width);
+
+  // Animações
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const slideAnim = React.useRef(new Animated.Value(50)).current;
+
+  React.useEffect(() => {
+    // Animação de entrada do hero banner
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   // Altura do hero baseada no tamanho da tela
   const heroHeight = isDesktop ? 500 : isTablet ? 400 : 350;
@@ -178,7 +236,14 @@ const ResponsiveHeroBanner = ({ course }: { course: any }) => {
           colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
           style={styles.heroGradient}
         >
-          <View style={[styles.heroContent, { paddingHorizontal: padding }]}>
+          <Animated.View style={[
+            styles.heroContent, 
+            { 
+              paddingHorizontal: padding,
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }]
+            }
+          ]}>
             <Text style={[styles.heroCategory, { fontSize: isDesktop ? 16 : 12 }]}>DESTAQUE</Text>
             <Text style={[styles.heroTitle, { 
               fontSize: isDesktop ? 48 : isTablet ? 36 : 28,
@@ -218,7 +283,7 @@ const ResponsiveHeroBanner = ({ course }: { course: any }) => {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </Animated.View>
         </LinearGradient>
       </ImageBackground>
     </View>
