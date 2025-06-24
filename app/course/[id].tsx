@@ -148,7 +148,7 @@ export default function CourseDetailScreen() {
         <View style={[styles.header, { paddingHorizontal: padding }]}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => router.back()}
+            onPress={() => router.push('/(tabs)')}
           >
             <Text style={[styles.backIcon, { fontSize: isDesktop ? 24 : 20 }]}>←</Text>
           </TouchableOpacity>
