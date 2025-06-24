@@ -309,21 +309,22 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
   },
   heroCategory: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     letterSpacing: 2,
     marginBottom: 8,
+    backgroundColor: 'transparent',
   },
   heroTitle: {
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#FFFFFF',
     marginBottom: 12,
-    lineHeight: 1.2,
+    backgroundColor: 'transparent',
   },
   heroDescription: {
-    color: '#ccc',
-    lineHeight: 1.4,
+    color: '#CCCCCC',
     marginBottom: 24,
+    backgroundColor: 'transparent',
   },
   heroActions: {
     width: '100%',
@@ -335,8 +336,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   playButtonText: {
-    color: '#000',
+    color: '#000000',
     fontWeight: 'bold',
+    backgroundColor: 'transparent',
   },
   infoButton: {
     backgroundColor: 'rgba(255,255,255,0.3)',
@@ -345,8 +347,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   infoButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontWeight: '600',
+    backgroundColor: 'transparent',
   },
 
   // Carrossel
@@ -359,11 +362,13 @@ const styles = StyleSheet.create({
   },
   carouselTitle: {
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#FFFFFF',
+    backgroundColor: 'transparent',
   },
   seeAllText: {
-    color: '#ccc',
+    color: '#CCCCCC',
     fontWeight: '500',
+    backgroundColor: 'transparent',
   },
   carouselScroll: {},
   carouselContent: {},
@@ -386,9 +391,10 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#FFFFFF',
     marginBottom: 8,
-    lineHeight: 1.2,
+    textAlign: 'left',
+    backgroundColor: 'transparent',
   },
   progressContainer: {
     marginTop: 8,
@@ -405,7 +411,8 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   progressText: {
-    color: '#ccc',
+    color: '#CCCCCC',
+    backgroundColor: 'transparent',
   },
   courseMetadata: {
     flexDirection: 'row',
@@ -415,9 +422,11 @@ const styles = StyleSheet.create({
   courseLevel: {
     color: '#AADD00',
     fontWeight: '600',
+    backgroundColor: 'transparent',
   },
   courseDuration: {
-    color: '#ccc',
+    color: '#CCCCCC',
+    backgroundColor: 'transparent',
   },
   bottomSpacing: {},
 });
